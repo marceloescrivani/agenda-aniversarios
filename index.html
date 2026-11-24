@@ -120,53 +120,61 @@
       }
     }
 
+// Função para tratar qualquer formato de data e retornar apenas DD/MM
 function formatarDiaMes(valorData) {
   if (!valorData) return "";
+  
+  let strData = String(valorData).trim();
 
-  // Se a data vier no formato ISO (ex: 2026-06-06T03:00:00.000Z ou 2026-06-06)
-  if (typeof valorData === 'string' && valorData.includes('-')) {
-    const partesData = valorData.split('T')[0].split('-'); // Pega "2026-06-06"
-    if (partesData.length === 3) {
-      const mes = partesData[1];
-      const dia = partesData[2];
+  // Se vier no formato ISO do Google Apps Script (ex: "2026-06-06T03:00:00.000Z" ou "2026-06-06")
+  if (strData.includes('-')) {
+    const apenasData = strData.split('T')[0]; // Pega "2026-06-06"
+    const partes = apenasData.split('-');
+    if (partes.length === 3) {
+      const mes = partes[1].padStart(2, '0');
+      const dia = partes[2].padStart(2, '0');
       return `${dia}/${mes}`;
     }
   }
 
   // Se já estiver no formato "DD/MM" ou "DD/MM/AAAA"
-  const partesBarra = String(valorData).split('/');
-  if (partesBarra.length >= 2) {
-    const dia = partesBarra[0].padStart(2, '0');
-    const mes = partesBarra[1].padStart(2, '0');
-    return `${dia}/${mes}`;
+  if (strData.includes('/')) {
+    const partes = strData.split('/');
+    if (partes.length >= 2) {
+      const dia = partes[0].padStart(2, '0');
+      const mes = partes[1].padStart(2, '0');
+      return `${dia}/${mes}`;
+    }
   }
 
-  return valorData;
+  return strData;
 }
 
 function exibirLista(lista) {
   const listaDiv = document.getElementById('lista');
-  if (lista.length === 0) {
+  if (!lista || lista.length === 0) {
     listaDiv.innerHTML = "Nenhum registro encontrado.";
     return;
   }
 
   listaDiv.innerHTML = lista.map(item => {
-    const dataFormatada = formatarDiaMes(item.data);
+    // Garante que a data seja formatada como DD/MM
+    const dataApenasDiaMes = formatarDiaMes(item.data);
 
     return `
       <div class="list-item">
         <div>
           <strong>${item.nome}</strong><br>
-          <small>🎉 ${dataFormatada}</small>
+          <small>🎉 ${dataApenasDiaMes}</small>
         </div>
         <div class="actions">
-          <button class="btn-edit" onclick="prepararEdicao(${item.rowId}, '${item.data}', '${item.nome}')">✏️</button>
+          <button class="btn-edit" onclick="prepararEdicao(${item.rowId}, '${dataApenasDiaMes}', '${item.nome}')">✏️</button>
           <button class="btn-danger" onclick="excluir(${item.rowId})">🗑️</button>
         </div>
       </div>
     `;
   }).join('');
+}
 }
 
     function filtrar() {
