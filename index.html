@@ -120,26 +120,45 @@
       }
     }
 
+function formatarDiaMes(valorData) {
+  if (!valorData) return "";
+
+  // Se a data vier no formato ISO (ex: 2026-06-06T03:00:00.000Z ou 2026-06-06)
+  if (typeof valorData === 'string' && valorData.includes('-')) {
+    const partesData = valorData.split('T')[0].split('-'); // Pega "2026-06-06"
+    if (partesData.length === 3) {
+      const mes = partesData[1];
+      const dia = partesData[2];
+      return `${dia}/${mes}`;
+    }
+  }
+
+  // Se já estiver no formato "DD/MM" ou "DD/MM/AAAA"
+  const partesBarra = String(valorData).split('/');
+  if (partesBarra.length >= 2) {
+    const dia = partesBarra[0].padStart(2, '0');
+    const mes = partesBarra[1].padStart(2, '0');
+    return `${dia}/${mes}`;
+  }
+
+  return valorData;
+}
+
 function exibirLista(lista) {
   const listaDiv = document.getElementById('lista');
   if (lista.length === 0) {
     listaDiv.innerHTML = "Nenhum registro encontrado.";
     return;
   }
-  
-  const anoAtual = new Date().getFullYear();
 
   listaDiv.innerHTML = lista.map(item => {
-    // Extrai apenas o dia (primeira parte antes da barra)
-    const partes = item.data ? item.data.split('/') : [];
-    const dia = partes[0] || item.data;
-    const dataDiaAno = `${dia}/${anoAtual}`;
+    const dataFormatada = formatarDiaMes(item.data);
 
     return `
       <div class="list-item">
         <div>
           <strong>${item.nome}</strong><br>
-          <small>🎉 ${dataDiaAno}</small>
+          <small>🎉 ${dataFormatada}</small>
         </div>
         <div class="actions">
           <button class="btn-edit" onclick="prepararEdicao(${item.rowId}, '${item.data}', '${item.nome}')">✏️</button>
@@ -148,7 +167,6 @@ function exibirLista(lista) {
       </div>
     `;
   }).join('');
-}
 }
 
     function filtrar() {
